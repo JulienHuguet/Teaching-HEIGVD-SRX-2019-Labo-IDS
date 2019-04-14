@@ -288,7 +288,7 @@ alert tcp any any -> any any (msg:"Mon nom!"; content:"Rubinstein"; sid:4000015;
 
 ---
 
-**Reponse :**  
+**Reponse :**  Permet de générer une alerte avec "Mon nom!" et d'écrire dans le journal, lorsqu'il reçoit des requêtes en TCP contenant "Rubinstein" depuis n'importe quel adresse IP et port à destination de n'importe quel addresse IP et port.
 
 ---
 
@@ -302,7 +302,11 @@ sudo snort -c myrules.rules -i eth0
 
 ---
 
-**Reponse :**  
+**Reponse :**  Lorsque la commande est exécutée, nous pouvons voir le nombre de règle qui seront lancées. Ensuite, un tableau récapitulatif contenant le nombre de règles par port et le type (entrée, sortie). Pour finir, des tableaux contenant des statistiques des règles et des configurations.
+
+![snort_detail_1](images/snort_detail_1.PNG)
+
+![snort_detail_2](images/snort_detail_2.PNG)
 
 ---
 
@@ -312,7 +316,9 @@ Aller à un site web contenant votre nom ou votre mot clé que vous avez choisi 
 
 ---
 
-**Reponse :**  
+**Reponse :** Une fois que Snort a finit de s'exécuter, il affiche plusieurs tableaux contenant divers statistiques sur l'ensemble des captures pour les règles appliquées mais également sur l'exécution de Snort. Voici un exemple de statistique : Nous pouvons voir que le mot clé à été trouvé 14 fois lorsque nous naviguions sur internet.
+
+  ![tcp_alert](images/tcp_alert.PNG)
 
 ---
 
@@ -322,7 +328,9 @@ Aller au répertoire /var/log/snort. Ouvrir le fichier `alert`. Vérifier qu'il 
 
 ---
 
-**Reponse :**  
+**Reponse :** Chaque alert est constituée d'un SID pour la règle (4000015), d'une révision (1) ainsi que du message d'alerte (Mon nom!). Ensuite, une priorité pour l'alerte, la date et l'heure de l'émission de l'alerte, l'IP et le port source et l'IP et le port de destination. Pour finir, plusieurs informations concernant le paquet sont présentes.
+
+  ![alert_champ](images/alert_champ.PNG)
 
 ---
 
@@ -337,7 +345,15 @@ Ecrire une règle qui journalise (sans alerter) un message à chaque fois que Wi
 
 ---
 
-**Reponse :**  
+**Reponse :**  Voici la règle que nous avons utilisé : `log tcp 192.168.1.122 any -> 91.198.174.192 any (sid:40000122;rev:1;)`. Nous avons directement utilisé l'IP de la machine hôte et l'IP du site wikipedia.
+
+Lorsque nous avons lancé snort, visité le site wikipedia et arrêté snort, un fichier de log a été créé dans /var/log/snort.
+
+![fichier_log](images/fichier_log.PNG)
+
+Via la commande snort -r snort.log.1554909721 nous pouvons afficher ce qui a été journalisé. Vous trouverez ci-dessous une capture d'écran avec les informations de journalisation.
+
+![log_wikipedia](images/log_wikipedia.PNG)
 
 ---
 
@@ -351,7 +367,15 @@ Ecrire une règle qui alerte à chaque fois que votre système reçoit un ping d
 
 ---
 
-**Reponse :**  
+**Reponse :** Nous avons utilisé la règle suivante : `alert icmp any any -> 192.168.1.122 any (itype:8;sid:40000133;rev:1;msg:"Detected Ping from outside";)`
+
+Le champ `itype:8` permet de vérifier le type du protocole ICMP, dans notre cas la valeur 8 équivaut à "Echo Request".
+
+L'alerte a été journalisée dans le fichier `/var/log/snort/alert`
+
+Voici un exemple d'alerte présente dans le fichier alert concernant notre règle:
+
+ ![ping](images/ping.PNG)
 
 ---
 
@@ -365,7 +389,9 @@ Modifier votre règle pour que les pings soient détectés dans les deux sens.
 
 ---
 
-**Reponse :**  
+**Reponse :**  `alert icmp any any <> 192.168.1.122 any (sid:40000134;rev:1;msg:"Ping detected";)`
+
+Pour cette règle, il suffit d'utiliser le symbole <> et d'enlever le itype afin de générer une alerte.
 
 ---
 
@@ -380,7 +406,13 @@ Essayer d'écrire une règle qui Alerte qu'une tentative de session SSH a été 
 
 ---
 
-**Reponse :**  
+**Reponse :** `alert tcp any any -> 192.168.1.122 22 (flags:S+;sid:4000160;rev:1;msg:"Connection from SSH detected";)`
+
+Cette règle permet de générer une alerte, lorsque la machine voisine essaie de ce connecter via ssh sur le port 22.
+
+Voici ce que nous trouvons dans le fichier alert concernant la tentative de connexion SSH.
+
+ ![ssh](images/ssh.PNG)
 
 ---
 
@@ -394,7 +426,7 @@ Lancer Wireshark et faire une capture du trafic sur l'interface connectée au br
 
 ---
 
-**Reponse :**  
+**Reponse :**  Il suffit d'utiliser la commande `sudo snort -c myrules.rules -i eth0 -r "Mon fichier"`
 
 ---
 
@@ -404,7 +436,17 @@ Utiliser l'option correcte de Snort pour analyser le fichier de capture Wireshar
 
 ---
 
-**Reponse :**  
+**Reponse :**  Snort va lire le fichier fourni et l'analyser comme si il écoutait sur un port, la seul différence avec une exécution normal est qu'il s'arrêtera automatiquement une fois la capture analysée. Nous lui fournissons juste un environnement avec des captures de paquet et Snort le traitera normalement. La journalisation ce fait également comme pour les autres règles, un fichier de log est créé pour cette capture.
+
+Voici une comparaison de deux alertes permettant de journaliser lorsque l'hôte reçoit un ping venant d'une autre machine, la première capture d'écran concerne l'utilisaton standart de Snort via une règle et la seconde via la capture Wireshark:
+
+![standard](images/standard.PNG)
+
+![Capture](images/Capture.PNG)
+
+Nous constatons qu'il n'y a pas de différence entre les deux méthodes.
+
+
 
 ---
 
